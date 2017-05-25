@@ -64,6 +64,11 @@ avogadro_plugin_nogl(insertdnaextension
   "insertdnaextension.cpp;insertcommand.cpp"
   insertdnadialog.ui)
 
+### ProtoBuilder extension
+avogadro_plugin_nogl(ProtoBuilderExtension
+        "ProtoBuilderExtension.cpp;insertcommand.cpp"
+        ProtoBuilderDialog.ui)
+
 ### h->methyl
 avogadro_plugin_nogl(h2methylextension h2methylextension.cpp)
 
