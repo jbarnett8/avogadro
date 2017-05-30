@@ -76,9 +76,6 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="1" colspan="2">
-        <widget class="QTableWidget" name="NA_core_table"/>
-       </item>
        <item row="2" column="3">
         <layout class="QFormLayout" name="formLayout">
          <property name="fieldGrowthPolicy">
@@ -147,6 +144,105 @@
          <property name="text">
           <string>Load Molecule From File</string>
          </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="2">
+        <widget class="QTableWidget" name="NA_core_table">
+         <property name="maximumSize">
+          <size>
+           <width>313</width>
+           <height>302</height>
+          </size>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Sunken</enum>
+         </property>
+         <property name="lineWidth">
+          <number>2</number>
+         </property>
+         <property name="horizontalScrollBarPolicy">
+          <enum>Qt::ScrollBarAlwaysOff</enum>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::NoEditTriggers</set>
+         </property>
+         <property name="dragDropOverwriteMode">
+          <bool>false</bool>
+         </property>
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SingleSelection</enum>
+         </property>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectRows</enum>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="textElideMode">
+          <enum>Qt::ElideRight</enum>
+         </property>
+         <property name="sortingEnabled">
+          <bool>true</bool>
+         </property>
+         <property name="rowCount">
+          <number>10</number>
+         </property>
+         <property name="columnCount">
+          <number>2</number>
+         </property>
+         <attribute name="horizontalHeaderVisible">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderMinimumSectionSize">
+          <number>21</number>
+         </attribute>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <row/>
+         <column>
+          <property name="text">
+           <string>Atom Index</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="textAlignment">
+           <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Element</string>
+          </property>
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="textAlignment">
+           <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+          </property>
+         </column>
         </widget>
        </item>
       </layout>

@@ -147,6 +147,14 @@ namespace Avogadro {
             connect(m_dialog->import_base_button, SIGNAL(clicked()),
                     this, SLOT(importCoreFile()));
 
+            m_dialog->NA_core_table->setColumnWidth(0, 100);
+            m_dialog->NA_core_table->setColumnWidth(1, 195);
+
+            connect(m_dialog->load_from_file_button_core, SIGNAL(clicked()),
+                    this, SLOT(loadCoreFile()));
+
+//            m_dialog->NA_core_table->setColumnCount(3);
+
 //            QButtonGroup* numStrands = new QButtonGroup(m_dialog);
 //            numStrands->addButton(m_dialog->singleStrandRadio, 0);
 //            numStrands->addButton(m_dialog->doubleStrandRadio, 1);
@@ -232,9 +240,15 @@ namespace Avogadro {
         OBConversion conv;
         conv.SetInFormat("CML");
         OBMol *mol = new OBMol;
-        if (!conv->ReadFile(mol, m_dialog->import_file_text->getText())) {
+        if (!conv.ReadFile(mol, m_dialog->import_file_text->text().toStdString())) {
             cerr << "Error reading backbone file. Exiting..." << endl;
             exit(1);
+        }
+        OBAtom *a;
+        for (int i = 1; i < mol->NumAtoms()+1; i++) {
+            a = mol->GetAtom(i);
+            m_dialog->NA_core_table->setItem(i-1, 0, new QTableWidgetItem(tr("%1").arg(i)));
+            m_dialog->NA_core_table->setItem(i-1, 1, new QTableWidgetItem(OpenBabel::etab.GetSymbol(a->GetAtomicNum())));
         }
     }
 

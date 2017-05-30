@@ -7,6 +7,7 @@
 
 #include <avogadro/extension.h>
 #include <openbabel/obconversion.h>
+#include <QTableWidgetItem>
 
 namespace Avogadro {
 
