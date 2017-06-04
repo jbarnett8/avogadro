@@ -4,16 +4,13 @@
 
 #include "ProtoBuilderExtension.h"
 
-#include "ProtoBuilderExtension.h"
 #include "insertcommand.h"
 
 #include "ui_ProtoBuilderDialog.h"
 
 #include <avogadro/glwidget.h>
-#include <avogadro/molecule.h>
 
 #include <openbabel/mol.h>
-#include <openbabel/obconversion.h>
 
 #include <QDebug>
 #include <QFileDialog>
@@ -80,150 +77,39 @@ namespace Avogadro {
         return NULL; // delayed action on user clicking the Insert button
     }
 
-    void ProtoBuilderExtension::performInsert()
-    {
-//        if (!m_dialog)
-//            return; // nothing we can do
-//
-//        QString sequence = m_dialog->sequenceText->toPlainText().toLower();
-//        bool dna = (m_dialog->typeComboBox->currentIndex() == 0);
-//        if (sequence.isEmpty())
-//            return; // also nothing to do
-//        // Add DNA/RNA tag for FASTA
-//        sequence = '>' + m_dialog->typeComboBox->currentText() + '\n'
-//                   + sequence;
-//
-//        OBConversion conv;
-//        if (!conv.SetInFormat("fasta"))
-//            return; // need the format to do structure generation for us
-//        // if DNA, check if the user wants single-strands
-//        if (dna && m_dialog->singleStrandRadio->isChecked())
-//            conv.AddOption("1", OBConversion::INOPTIONS);
-//        // Add the number of turns
-//        QString turns = QString("%1").arg(m_dialog->bpTurnsSpin->value());
-//        conv.AddOption("t", OBConversion::INOPTIONS, turns.toAscii().data());
-//
-//        OBMol obfragment;
-//        if (!conv.ReadString(&obfragment, sequence.toStdString()) )
-//            return; // failed conversion
-
-//        Molecule fragment;
-//        fragment.setOBMol(&obfragment);
-//        emit performCommand(new InsertFragmentCommand(m_molecule, fragment,
-//                                                      m_widget, tr("Insert DNA")));
-    }
-
-    void ProtoBuilderExtension::writeSettings(QSettings &settings) const
-    {
-//        Extension::writeSettings(settings);
-//
-//        if (!m_dialog)
-//            return; // nothing to save
-//
-//        settings.setValue("nucleicType", m_dialog->typeComboBox->currentIndex());
-//        settings.setValue("basePairType", m_dialog->bpCombo->currentIndex());
-//        settings.setValue("basePairPerTurn", m_dialog->bpTurnsSpin->value());
-//        settings.setValue("singleStrand", m_dialog->singleStrandRadio->isChecked());
-    }
-
-    void ProtoBuilderExtension::readSettings(QSettings &settings)
-    {
-//        Extension::readSettings(settings);
-//
-//        if (!m_dialog)
-//            constructDialog();
-//
-//        m_dialog->typeComboBox->setCurrentIndex(settings.value("nucleicType", 0).toInt());
-//        m_dialog->bpCombo->setCurrentIndex(settings.value("basePairType", 1).toInt());
-//        m_dialog->bpTurnsSpin->setValue(settings.value("basePairPerTurn", 10.5).toDouble());
-//        m_dialog->singleStrandRadio->setChecked(settings.value("singleStrand", 0).toBool());
-    }
-
-    void ProtoBuilderExtension::constructDialog()
-    {
+    void ProtoBuilderExtension::constructDialog() {
         if (m_dialog == NULL) {
             m_dialog = new ProtoBuilderDialog(m_widget);
 
-            connect(m_dialog->import_base_button, SIGNAL(clicked()),
+            connect(m_dialog->import_core_button, SIGNAL(clicked()),
                     this, SLOT(importCoreFile()));
+            connect(m_dialog->import_backbone_button, SIGNAL(clicked()),
+                    this, SLOT(importBackboneFile()));
 
             m_dialog->NA_core_table->setColumnWidth(0, 100);
             m_dialog->NA_core_table->setColumnWidth(1, 195);
+            m_dialog->backbone_table->setColumnWidth(0, 100);
+            m_dialog->backbone_table->setColumnWidth(1, 195);
 
             connect(m_dialog->load_from_file_button_core, SIGNAL(clicked()),
                     this, SLOT(loadCoreFile()));
+            connect(m_dialog->load_from_file_button_backbone, SIGNAL(clicked()),
+                    this, SLOT(loadBackboneFile()));
 
-//            m_dialog->NA_core_table->setColumnCount(3);
+            connect(m_molecule, SIGNAL(primitiveAdded(Primitive * )), this, SLOT(moleculeUpdated()));
+            connect(m_molecule, SIGNAL(primitiveUpdated(Primitive * )), this, SLOT(moleculeUpdated()));
+            connect(m_molecule, SIGNAL(primitiveRemoved(Primitive * )), this, SLOT(moleculeUpdated()));
 
-//            QButtonGroup* numStrands = new QButtonGroup(m_dialog);
-//            numStrands->addButton(m_dialog->singleStrandRadio, 0);
-//            numStrands->addButton(m_dialog->doubleStrandRadio, 1);
-//            numStrands->setExclusive(true);
-//
-//            connect(m_dialog->insertButton, SIGNAL(clicked()),
-//                    this, SLOT(performInsert()));
-//
-//            connect(m_dialog->bpCombo, SIGNAL(currentIndexChanged(int)),
-//                    this, SLOT(updateBPTurns(int)));
-//
-//            connect(m_dialog->typeComboBox, SIGNAL(currentIndexChanged(int)),
-//                    this, SLOT(changeNucleicType(int)));
-//
-//            // Set the nucleic buttons to update the sequence
-//                    foreach(const QToolButton *child, m_dialog->findChildren<QToolButton*>()) {
-//                    connect(child, SIGNAL(clicked()), this, SLOT(updateText()));
-//                }
-//            connect(m_dialog, SIGNAL(destroyed()), this, SLOT(dialogDestroyed()));
+            connect(m_dialog->NA_core_table, SIGNAL(itemSelectionChanged()),
+                    this, SLOT(moleculeSelectionChangedCore()));
+            connect(m_dialog->backbone_table, SIGNAL(itemSelectionChanged()),
+                    this, SLOT(moleculeSelectionChangedBackbone()));
+
+            connect(m_dialog->include_excluded_torsion_button, SIGNAL(clicked()),
+                    this, SLOT(addTorsionExclusionList()));
+            connect(m_dialog->clear_torsions_button, SIGNAL(clicked()),
+                    this, SLOT(clearTorsionExclusionList()));
         }
-//        m_dialog->sequenceText->setPlainText(QString());
-    }
-
-    void ProtoBuilderExtension::updateText()
-    {
-//        QToolButton *button = qobject_cast<QToolButton*>(sender());
-//        if (button) {
-//            QString sequenceText = m_dialog->sequenceText->toPlainText();
-//            sequenceText += button->text();
-//
-//            m_dialog->sequenceText->setPlainText(sequenceText);
-//        }
-    }
-
-    void ProtoBuilderExtension::updateBPTurns(int type)
-    {
-//        switch(type) {
-//            case 0: // A-DNA
-//                m_dialog->bpTurnsSpin->setValue(11.0);
-//                break;
-//            case 1: // B-DNA
-//                m_dialog->bpTurnsSpin->setValue(10.5);
-//                break;
-//            case 2: // Z-DNA
-//                m_dialog->bpTurnsSpin->setValue(12.0);
-//                break;
-//            default:
-//                // anything the user wants
-//                break;
-//        }
-    }
-
-    void ProtoBuilderExtension::changeNucleicType(int type)
-    {
-//        if (type == 1) { // RNA
-//            m_dialog->bpCombo->setCurrentIndex(3); // other
-//            m_dialog->bpTurnsSpin->setValue(11.0); // standard RNA
-//            m_dialog->singleStrandRadio->setChecked(true);
-//            m_dialog->singleStrandRadio->setEnabled(false);
-//            m_dialog->doubleStrandRadio->setEnabled(false);
-//            m_dialog->toolButton_TU->setText(tr("U", "uracil"));
-//            m_dialog->toolButton_TU->setToolTip(tr("Uracil"));
-//            return;
-//        }
-//        // DNA
-//        m_dialog->singleStrandRadio->setEnabled(true);
-//        m_dialog->doubleStrandRadio->setEnabled(true);
-//        m_dialog->toolButton_TU->setText(tr("T", "thymine"));
-//        m_dialog->toolButton_TU->setToolTip(tr("Thymine"));
     }
 
     void ProtoBuilderExtension::dialogDestroyed()
@@ -232,24 +118,128 @@ namespace Avogadro {
     }
 
     void ProtoBuilderExtension::importCoreFile() {
-        QString fileName = QFileDialog::getOpenFileName(m_dialog, tr("Open Image"), "", tr("Molecule Files (*.cml)"));
-        m_dialog->import_file_text->setText(fileName);
+        QString fileName = QFileDialog::getOpenFileName(m_dialog, tr("Open CML File"), "", tr("Molecule Files (*.cml)"));
+        m_dialog->import_file_text_2->setText(fileName);
     }
 
     void ProtoBuilderExtension::loadCoreFile() {
         OBConversion conv;
         conv.SetInFormat("CML");
-        OBMol *mol = new OBMol;
-        if (!conv.ReadFile(mol, m_dialog->import_file_text->text().toStdString())) {
-            cerr << "Error reading backbone file. Exiting..." << endl;
-            exit(1);
+        OBMol mol;
+        if (!conv.ReadFile(&mol, m_dialog->import_file_text_2->text().toStdString())) {
+            cerr << "Error reading core file." << endl;
+            QMessageBox::critical(m_dialog, "Error", "There was an error loading the cml file. Please make sure you specified the file correctly.");
         }
         OBAtom *a;
-        for (int i = 1; i < mol->NumAtoms()+1; i++) {
-            a = mol->GetAtom(i);
-            m_dialog->NA_core_table->setItem(i-1, 0, new QTableWidgetItem(tr("%1").arg(i)));
-            m_dialog->NA_core_table->setItem(i-1, 1, new QTableWidgetItem(OpenBabel::etab.GetSymbol(a->GetAtomicNum())));
+        mol.Center();
+        m_dialog->NA_core_table->setRowCount(mol.NumAtoms());
+//        m_dialog->backbone_table->setTorizontalHeaderItem(0, new QTableWidgetItem("Atom Index"));
+//        m_dialog->backbone_table->setTorizontalHeaderItem(1, new QTableWidgetItem("Element"));
+        for (int i = 1; i < mol.NumAtoms()+1; i++) {
+            a = mol.GetAtom(i);
+            QTableWidgetItem *item = new QTableWidgetItem;
+            item->setTextAlignment(Qt::AlignCenter);
+            QTableWidgetItem *num = item->clone(), *element = item->clone();
+            num->setData(Qt::EditRole, i);
+            element->setData(Qt::EditRole, OpenBabel::etab.GetSymbol(a->GetAtomicNum()));
+            m_dialog->NA_core_table->setItem(i-1, 0, num);
+            m_dialog->NA_core_table->setItem(i-1, 1, element);
         }
+        Molecule avogadro_mol, empty;
+        avogadro_mol.setOBMol(&mol);
+        base_mol = avogadro_mol;
+        m_molecule->clear();
+        emit performCommand(new InsertFragmentCommand(m_molecule, avogadro_mol, m_widget, tr("Insert Base")));
+        focus = BaseFocus;
+        m_dialog->connect_sbox_2->setMaximum(mol.NumAtoms());
+        m_dialog->vector_sbox_2->setMaximum(mol.NumAtoms());
+    }
+
+    void ProtoBuilderExtension::moleculeUpdated() {
+        focus = NoFocus;
+    }
+
+    void ProtoBuilderExtension::moleculeSelectionChangedCore() {
+        if (focus != BaseFocus) {
+            m_molecule->clear();
+            emit performCommand(new InsertFragmentCommand(m_molecule, base_mol, m_widget, tr("Insert Base")));
+            focus = BaseFocus;
+        }
+        QList<Primitive *> matchedPrimitives;
+        QTableWidgetItem *item = m_dialog->NA_core_table->item(m_dialog->NA_core_table->currentRow(), 0);
+        matchedPrimitives.append((Primitive*)m_molecule->atom(item->text().toInt() - 1));
+        m_widget->clearSelected();
+        m_widget->setSelected(matchedPrimitives, true);
+        m_widget->update();
+    }
+
+    void ProtoBuilderExtension::clearTorsionExclusionList() {
+        m_dialog->torsion_list->clear();
+        excludeTorsionQString.clear();
+    }
+
+    void ProtoBuilderExtension::addTorsionExclusionList() {
+        int atomIndex1, atomIndex2;
+        atomIndex1 = m_dialog->torsion_exclusion_atom_index_1->value();
+        atomIndex2 = m_dialog->torsion_exclusion_atom_index_2->value();
+        excludeTorsionQString.append(tr("(%1,%2)\n").arg(atomIndex1).arg(atomIndex2));
+        m_dialog->torsion_list->setText(excludeTorsionQString);
+    }
+
+    void ProtoBuilderExtension::importBackboneFile() {
+        QString fileName = QFileDialog::getOpenFileName(m_dialog, tr("Open CML File"), "", tr("Molecule Files (*.cml)"));
+        m_dialog->import_file_text->setText(fileName);
+    }
+
+    void ProtoBuilderExtension::loadBackboneFile() {
+        OBConversion conv;
+        conv.SetInFormat("CML");
+        OBMol mol;
+        if (!conv.ReadFile(&mol, m_dialog->import_file_text->text().toStdString())) {
+            cerr << "Error reading backbone file." << endl;
+            QMessageBox::critical(m_dialog, "Error", "There was an error loading the cml file. Please make sure you specified the file correctly.");
+        }
+        OBAtom *a;
+        mol.Center();
+        m_dialog->backbone_table->setRowCount(mol.NumAtoms());
+//        m_dialog->backbone_table->setTorizontalHeaderItem(0, new QTableWidgetItem("Atom Index"));
+//        m_dialog->backbone_table->setTorizontalHeaderItem(1, new QTableWidgetItem("Element"));
+        for (int i = 1; i < mol.NumAtoms()+1; i++) {
+            a = mol.GetAtom(i);
+            QTableWidgetItem *item = new QTableWidgetItem;
+            item->setTextAlignment(Qt::AlignCenter);
+            QTableWidgetItem *num = item->clone(), *element = item->clone();
+            num->setData(Qt::EditRole, i);
+            element->setData(Qt::EditRole, OpenBabel::etab.GetSymbol(a->GetAtomicNum()));
+            m_dialog->backbone_table->setItem(i-1, 0, num);
+            m_dialog->backbone_table->setItem(i-1, 1, element);
+        }
+        Molecule avogadro_mol, empty;
+        avogadro_mol.setOBMol(&mol);
+        backbone_mol = avogadro_mol;
+        m_molecule->clear();
+        emit performCommand(new InsertFragmentCommand(m_molecule, avogadro_mol, m_widget, tr("Insert Backbone")));
+        focus = BackboneFocus;
+        m_dialog->connect_sbox->setMaximum(mol.NumAtoms());
+        m_dialog->connect_sbox2->setMaximum(mol.NumAtoms());
+        m_dialog->a_to_base_sbox->setMaximum(mol.NumAtoms());
+        m_dialog->a_vector_sbox->setMaximum(mol.NumAtoms());
+        m_dialog->torsion_exclusion_atom_index_1->setMaximum(mol.NumAtoms());
+        m_dialog->torsion_exclusion_atom_index_2->setMaximum(mol.NumAtoms());
+    }
+
+    void ProtoBuilderExtension::moleculeSelectionChangedBackbone() {
+        if (focus != BackboneFocus) {
+            m_molecule->clear();
+            emit performCommand(new InsertFragmentCommand(m_molecule, backbone_mol, m_widget, tr("Insert Backbone")));
+            focus = BackboneFocus;
+        }
+        QList<Primitive *> matchedPrimitives;
+        QTableWidgetItem *item = m_dialog->backbone_table->item(m_dialog->backbone_table->currentRow(), 0);
+        matchedPrimitives.append((Primitive*)m_molecule->atom(item->text().toInt() - 1));
+        m_widget->clearSelected();
+        m_widget->setSelected(matchedPrimitives, true);
+        m_widget->update();
     }
 
 } // end namespace Avogadro

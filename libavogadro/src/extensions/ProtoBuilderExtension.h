@@ -8,6 +8,9 @@
 #include <avogadro/extension.h>
 #include <openbabel/obconversion.h>
 #include <QTableWidgetItem>
+#include <QMessageBox>
+#include <avogadro/molecule.h>
+#include <avogadro/primitivelist.h>
 
 namespace Avogadro {
 
@@ -30,26 +33,29 @@ namespace Avogadro {
         QString menuPath(QAction *action) const;
         void setMolecule(Molecule *molecule);
 
-        void writeSettings(QSettings &settings) const;
-        void readSettings(QSettings &settings);
 
     public Q_SLOTS:
-        void performInsert();
-
-        void updateText();
-        void updateBPTurns(int type);
-        void changeNucleicType(int type);
 
         void dialogDestroyed();
         void importCoreFile();
+        void importBackboneFile();
         void loadCoreFile();
+        void loadBackboneFile();
+        void moleculeUpdated();
+        void moleculeSelectionChangedCore();
+        void moleculeSelectionChangedBackbone();
+        void addTorsionExclusionList();
+        void clearTorsionExclusionList();
 
     private:
         QList<QAction *> m_actions;
         GLWidget* m_widget;
         Molecule *m_molecule;
-
+        enum TableFocus {BaseFocus, BackboneFocus, NoFocus};
+        TableFocus focus = NoFocus;
+        Molecule base_mol, backbone_mol;
         ProtoBuilderDialog *m_dialog;
+        QString excludeTorsionQString;
 
         void constructDialog();
     };
