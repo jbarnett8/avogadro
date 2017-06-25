@@ -32,6 +32,7 @@ namespace Avogadro {
         QUndoCommand* performAction(QAction *action, GLWidget *widget);
         QString menuPath(QAction *action) const;
         void setMolecule(Molecule *molecule);
+        void validate();
 
 
     public Q_SLOTS:
@@ -46,16 +47,21 @@ namespace Avogadro {
         void moleculeSelectionChangedBackbone();
         void addTorsionExclusionList();
         void clearTorsionExclusionList();
+        void saveDataFile();
+        void loadResults();
+        void importResultsFile();
+        void ConformerSelectionChanged();
 
     private:
         QList<QAction *> m_actions;
         GLWidget* m_widget;
         Molecule *m_molecule;
-        enum TableFocus {BaseFocus, BackboneFocus, NoFocus};
-        TableFocus focus = NoFocus;
-        Molecule base_mol, backbone_mol;
+        enum TableFocus {BaseFocus, BackboneFocus, ConformerFocus, NoFocus};
+        TableFocus focus;
+        Molecule base_mol, backbone_mol, conformer_mol;
         ProtoBuilderDialog *m_dialog;
         QString excludeTorsionQString;
+        std::vector<std::vector<Eigen::Vector3d > * > coords;
 
         void constructDialog();
     };
